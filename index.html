@@ -228,7 +228,7 @@
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 
-        // ------------------- ДАННЫЕ -------------------
+        // ------------------- АЛФАВИТ -------------------
         const alphabet = [
             { letter: "А", word: "Арбуз", color: 0xe34234, emoji: "🍉" },
             { letter: "Б", word: "Барабан", color: 0x3a9b5e, emoji: "🥁" },
@@ -278,29 +278,31 @@
         const soundBtn = document.getElementById('soundBtn');
         const container = document.getElementById('canvas-container');
 
-        // ------------------- ЗВУК -------------------
+        // ------------------- ЗВУК (с принудительной активацией для мобильных) -------------------
         let soundEnabled = true;
         let audioCtx = null;
         let currentSpeech = null;
-        let audioInitialized = false;
+        let audioUnlocked = false;
 
-        function initAudio() {
-            if (audioInitialized) return;
+        function unlockAudio() {
+            if (audioUnlocked) return;
             try {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                audioInitialized = true;
-            } catch(e) { console.log("Web Audio не поддерживается"); }
-        }
-
-        function resumeAudio() {
-            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                audioUnlocked = true;
+            } catch(e) {}
         }
 
         function playBeep() {
             if (!soundEnabled) return;
-            if (!audioCtx) initAudio();
-            if (!audioCtx) return;
-            resumeAudio();
+            if (!audioCtx) {
+                try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){ return; }
+            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
             try {
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
@@ -315,8 +317,11 @@
             } catch(e) {}
         }
 
-        function speakLetter(letter) {
+        // ГЛАВНОЕ: функция озвучивания вызывается прямо из обработчика жеста без задержек
+        function speakLetterNow(letter) {
             if (!soundEnabled) return;
+            // Разблокируем аудио и SpeechSynthesis
+            unlockAudio();
             playBeep();
             try {
                 if (window.speechSynthesis) {
@@ -329,15 +334,17 @@
                     utterance.onend = () => { currentSpeech = null; };
                     currentSpeech = utterance;
                     window.speechSynthesis.speak(utterance);
+                } else {
+                    console.log("SpeechSynthesis не поддерживается");
                 }
-            } catch(e) { console.log("SpeechSynthesis ошибка", e); }
+            } catch(e) { console.log("Ошибка озвучки", e); }
         }
 
         function toggleSound() {
             soundEnabled = !soundEnabled;
             soundBtn.textContent = soundEnabled ? '🔊 Звук вкл' : '🔇 Звук выкл';
             if (soundEnabled) {
-                if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+                unlockAudio();
                 playBeep();
             } else {
                 if (audioCtx) audioCtx.suspend();
@@ -348,19 +355,17 @@
         soundBtn.addEventListener('click', toggleSound);
         soundBtn.addEventListener('touchstart', (e) => { e.preventDefault(); toggleSound(); }, { passive: false });
 
-        function onFirstInteraction() {
-            initAudio();
-            resumeAudio();
-            if (window.speechSynthesis) window.speechSynthesis.getVoices();
-            document.removeEventListener('click', onFirstInteraction);
-            document.removeEventListener('touchstart', onFirstInteraction);
+        // Разблокировка по первому касанию
+        function firstTouchUnlock() {
+            unlockAudio();
+            document.removeEventListener('touchstart', firstTouchUnlock);
+            document.removeEventListener('click', firstTouchUnlock);
         }
-        document.addEventListener('click', onFirstInteraction);
-        document.addEventListener('touchstart', onFirstInteraction);
+        document.addEventListener('touchstart', firstTouchUnlock);
+        document.addEventListener('click', firstTouchUnlock);
 
-        // ------------------- ИНИЦИАЛИЗАЦИЯ 3D (гарантия работы на мобильных) -------------------
+        // ------------------- 3D СЦЕНА (без изменений, работает) -------------------
         function init3D() {
-            // Очищаем контейнер
             while (container.firstChild) container.removeChild(container.firstChild);
 
             const scene = new THREE.Scene();
@@ -397,7 +402,6 @@
             controls.touchRotate = true;
             controls.touchZoom = true;
 
-            // Освещение
             const ambient = new THREE.AmbientLight(0xffffff, 0.65);
             scene.add(ambient);
             const mainLight = new THREE.DirectionalLight(0xfff5d1, 1.3);
@@ -413,7 +417,6 @@
             backLight.position.set(0, 2.5, -5);
             scene.add(backLight);
 
-            // Платформа
             const platformMat = new THREE.MeshStandardMaterial({ color: 0xffdd99, roughness: 0.35, metalness: 0.05, emissive: 0x442200, emissiveIntensity: 0.06 });
             const platform = new THREE.Mesh(new THREE.CylinderGeometry(3.4, 3.4, 0.18, 32), platformMat);
             platform.position.set(0, -0.68, 0);
@@ -421,14 +424,12 @@
             platform.castShadow = true;
             scene.add(platform);
 
-            // Кольцо
             const ringMat = new THREE.MeshStandardMaterial({ color: 0xffaa66, emissive: 0xff6633, emissiveIntensity: 0.2 });
             const ring = new THREE.Mesh(new THREE.TorusGeometry(3.5, 0.1, 64, 200), ringMat);
             ring.rotation.x = Math.PI / 2;
             ring.position.y = -0.62;
             scene.add(ring);
 
-            // Парящие шарики (немного)
             const floatingSpheres = [];
             for (let i = 0; i < 18; i++) {
                 const size = 0.1 + Math.random() * 0.12;
@@ -442,7 +443,6 @@
                 floatingSpheres.push({ mesh: sphere, speed: 0.004 + Math.random() * 0.012, offsetY: sphere.position.y, range: 0.22, phase: Math.random() * Math.PI * 2 });
             }
 
-            // Функции создания кубика и карточки
             function createLetterCube(letter, colorHex) {
                 const group = new THREE.Group();
                 const boxMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.2, metalness: 0.05, emissive: 0x331100, emissiveIntensity: 0.08 });
@@ -541,7 +541,8 @@
                         }
                     }, 50);
                 }
-                setTimeout(() => speakLetter(data.letter), 100);
+                // Озвучивание при смене буквы — отложено, чтобы не мешать, но используем ту же функцию
+                setTimeout(() => speakLetterNow(data.letter), 100);
             }
 
             function nextLetter() {
@@ -553,13 +554,14 @@
                 switchToLetter(currentIndex);
             }
 
-            // Обработчики
-            nextBtn.onclick = nextLetter;
+            // Прямые обработчики без лишних задержек
+            nextBtn.onclick = () => { nextLetter(); };
             nextBtn.ontouchstart = (e) => { e.preventDefault(); nextLetter(); };
-            prevBtn.onclick = prevLetter;
+            prevBtn.onclick = () => { prevLetter(); };
             prevBtn.ontouchstart = (e) => { e.preventDefault(); prevLetter(); };
+            
             const onCardClick = () => {
-                speakLetter(alphabet[currentIndex].letter);
+                speakLetterNow(alphabet[currentIndex].letter);
                 letterCard.classList.add('speaking');
                 setTimeout(() => letterCard.classList.remove('speaking'), 200);
             };
@@ -568,7 +570,6 @@
 
             switchToLetter(0);
 
-            // Анимационный цикл
             let time = 0;
             function animate() {
                 requestAnimationFrame(animate);
@@ -592,7 +593,6 @@
             }
             animate();
 
-            // Обработка изменения размера окна
             window.addEventListener('resize', () => {
                 const width = window.innerWidth;
                 const height = window.innerHeight;
@@ -603,7 +603,6 @@
             });
         }
 
-        // Запуск после полной загрузки DOM
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init3D);
         } else {
