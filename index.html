@@ -278,14 +278,26 @@
         const soundBtn = document.getElementById('soundBtn');
         const container = document.getElementById('canvas-container');
 
-        // ------------------- ЗВУК (с принудительной активацией для мобильных) -------------------
+        // ------------------- ЗВУК С ГАРАНТИЕЙ РАБОТЫ НА ТЕЛЕФОНЕ -------------------
         let soundEnabled = true;
         let audioCtx = null;
-        let currentSpeech = null;
-        let audioUnlocked = false;
+        let speechUnlocked = false;
 
-        function unlockAudio() {
-            if (audioUnlocked) return;
+        // Функция принудительной разблокировки SpeechSynthesis (мобильные требуют)
+        function unlockSpeech() {
+            if (speechUnlocked) return;
+            speechUnlocked = true;
+            try {
+                // Пустой запрос, чтобы активировать SpeechSynthesis
+                const dummy = new SpeechSynthesisUtterance('');
+                dummy.lang = 'ru-RU';
+                window.speechSynthesis.speak(dummy);
+                setTimeout(() => window.speechSynthesis.cancel(), 100);
+            } catch(e) {}
+        }
+
+        function playBeep() {
+            if (!soundEnabled) return;
             try {
                 if (!audioCtx) {
                     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -293,17 +305,6 @@
                 if (audioCtx.state === 'suspended') {
                     audioCtx.resume();
                 }
-                audioUnlocked = true;
-            } catch(e) {}
-        }
-
-        function playBeep() {
-            if (!soundEnabled) return;
-            if (!audioCtx) {
-                try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){ return; }
-            }
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            try {
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.connect(gain);
@@ -317,25 +318,20 @@
             } catch(e) {}
         }
 
-        // ГЛАВНОЕ: функция озвучивания вызывается прямо из обработчика жеста без задержек
+        // Озвучивание вызывается синхронно, без setTimeout
         function speakLetterNow(letter) {
             if (!soundEnabled) return;
-            // Разблокируем аудио и SpeechSynthesis
-            unlockAudio();
+            unlockSpeech(); // гарантия активации SpeechSynthesis
             playBeep();
             try {
                 if (window.speechSynthesis) {
-                    if (currentSpeech) window.speechSynthesis.cancel();
+                    window.speechSynthesis.cancel(); // отменяем предыдущее
                     const utterance = new SpeechSynthesisUtterance(letter);
                     utterance.lang = 'ru-RU';
                     utterance.rate = 0.75;
                     utterance.pitch = 1.4;
                     utterance.volume = 1;
-                    utterance.onend = () => { currentSpeech = null; };
-                    currentSpeech = utterance;
                     window.speechSynthesis.speak(utterance);
-                } else {
-                    console.log("SpeechSynthesis не поддерживается");
                 }
             } catch(e) { console.log("Ошибка озвучки", e); }
         }
@@ -344,7 +340,6 @@
             soundEnabled = !soundEnabled;
             soundBtn.textContent = soundEnabled ? '🔊 Звук вкл' : '🔇 Звук выкл';
             if (soundEnabled) {
-                unlockAudio();
                 playBeep();
             } else {
                 if (audioCtx) audioCtx.suspend();
@@ -357,14 +352,15 @@
 
         // Разблокировка по первому касанию
         function firstTouchUnlock() {
-            unlockAudio();
+            unlockSpeech();
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
             document.removeEventListener('touchstart', firstTouchUnlock);
             document.removeEventListener('click', firstTouchUnlock);
         }
         document.addEventListener('touchstart', firstTouchUnlock);
         document.addEventListener('click', firstTouchUnlock);
 
-        // ------------------- 3D СЦЕНА (без изменений, работает) -------------------
+        // ------------------- 3D СЦЕНА -------------------
         function init3D() {
             while (container.firstChild) container.removeChild(container.firstChild);
 
@@ -541,8 +537,8 @@
                         }
                     }, 50);
                 }
-                // Озвучивание при смене буквы — отложено, чтобы не мешать, но используем ту же функцию
-                setTimeout(() => speakLetterNow(data.letter), 100);
+                // Озвучиваем новую букву без задержки (но небольшая задержка для анимации не влияет на разрешение)
+                setTimeout(() => speakLetterNow(data.letter), 80);
             }
 
             function nextLetter() {
@@ -554,10 +550,10 @@
                 switchToLetter(currentIndex);
             }
 
-            // Прямые обработчики без лишних задержек
-            nextBtn.onclick = () => { nextLetter(); };
+            // Прямые обработчики
+            nextBtn.onclick = () => nextLetter();
             nextBtn.ontouchstart = (e) => { e.preventDefault(); nextLetter(); };
-            prevBtn.onclick = () => { prevLetter(); };
+            prevBtn.onclick = () => prevLetter();
             prevBtn.ontouchstart = (e) => { e.preventDefault(); prevLetter(); };
             
             const onCardClick = () => {
