@@ -20,6 +20,22 @@
             touch-action: none;
         }
 
+        /* Главный контейнер */
+        #game-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
         /* Верхняя панель */
         .top-bar {
             position: absolute;
@@ -34,32 +50,31 @@
         }
 
         .controls-info {
-            background: rgba(0,0,0,0.65);
-            backdrop-filter: blur(8px);
-            padding: 8px 16px;
-            border-radius: 40px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(12px);
+            padding: 10px 18px;
+            border-radius: 50px;
             color: #ffefb9;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: bold;
-            font-family: monospace;
             pointer-events: auto;
+            font-family: monospace;
         }
 
         .hint {
-            background: rgba(0,0,0,0.65);
-            backdrop-filter: blur(8px);
-            padding: 8px 16px;
-            border-radius: 40px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(12px);
+            padding: 10px 18px;
+            border-radius: 50px;
             color: #ffefb9;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             pointer-events: auto;
-            text-align: right;
         }
 
-        /* Центральная панель с буквой */
+        /* Центральная карточка с буквой - крупная для мобильных */
         .ui-panel {
             position: absolute;
-            bottom: 30%;
+            bottom: 25%;
             left: 0;
             right: 0;
             text-align: center;
@@ -68,74 +83,74 @@
         }
 
         .letter-card {
-            background: rgba(255, 248, 225, 0.95);
-            backdrop-filter: blur(12px);
-            border-radius: 80px;
+            background: rgba(255, 248, 225, 0.96);
+            backdrop-filter: blur(16px);
+            border-radius: 100px;
             display: inline-block;
-            padding: 12px 32px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.25), 0 0 0 5px #ffd966, 0 0 0 10px #f9b83a;
+            padding: 16px 36px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3), 0 0 0 6px #ffd966, 0 0 0 12px #f9b83a;
             pointer-events: auto;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: transform 0.1s ease;
         }
 
         .letter-card:active {
-            transform: scale(0.97);
+            transform: scale(0.96);
         }
 
         .letter-card h1 {
-            font-size: 4.5rem;
+            font-size: 5rem;
             margin: 0;
             color: #2e5c3e;
-            text-shadow: 3px 3px 0 #ffd966;
-            letter-spacing: 6px;
+            text-shadow: 4px 4px 0 #ffd966;
+            letter-spacing: 8px;
         }
 
         .letter-card p {
-            font-size: 1.4rem;
-            margin: 5px 0 0;
+            font-size: 1.6rem;
+            margin: 8px 0 0;
             color: #4a2e1e;
             font-weight: bold;
         }
 
-        /* Кнопки навигации - крупные для мобильных */
+        /* Кнопки навигации - очень крупные для удобного нажатия пальцем */
         .nav-btn {
             position: absolute;
-            bottom: 20px;
+            bottom: 30px;
             background: #ffb347;
             border: none;
-            border-radius: 60px;
-            padding: 18px 32px;
+            border-radius: 70px;
+            padding: 18px 35px;
             font-size: 2rem;
             font-weight: bold;
             color: white;
-            text-shadow: 2px 2px 0 #c45100;
+            text-shadow: 3px 3px 0 #c45100;
             cursor: pointer;
-            box-shadow: 0 8px 0 #c45100;
+            box-shadow: 0 10px 0 #c45100;
             transition: 0.05s linear;
             z-index: 20;
             font-family: inherit;
             pointer-events: auto;
-            min-width: 120px;
+            min-width: 140px;
             touch-action: manipulation;
         }
 
         .nav-btn:active {
-            transform: translateY(4px);
-            box-shadow: 0 4px 0 #c45100;
+            transform: translateY(5px);
+            box-shadow: 0 5px 0 #c45100;
         }
 
-        .next-btn { right: 16px; }
-        .prev-btn { left: 16px; background: #66bb6a; text-shadow: 2px 2px 0 #2e7d32; box-shadow: 0 8px 0 #2e7d32; }
+        .next-btn { right: 20px; }
+        .prev-btn { left: 20px; background: #66bb6a; text-shadow: 3px 3px 0 #2e7d32; box-shadow: 0 10px 0 #2e7d32; }
 
-        /* Индикатор прогресса */
-        .progress-bar {
+        /* Прогресс-бар */
+        .progress-container {
             position: absolute;
-            bottom: 120px;
+            bottom: 140px;
             left: 20px;
             right: 20px;
-            height: 6px;
-            background: rgba(255,255,200,0.3);
+            height: 8px;
+            background: rgba(0,0,0,0.3);
             border-radius: 10px;
             overflow: hidden;
             z-index: 15;
@@ -150,19 +165,18 @@
             transition: width 0.3s ease;
         }
 
-        /* Звуковая кнопка */
-        .sound-toggle {
+        /* Кнопка звука */
+        .sound-btn {
             position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(8px);
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(12px);
             border: none;
             border-radius: 50px;
-            padding: 8px 20px;
+            padding: 10px 20px;
             color: #ffd966;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
             z-index: 25;
@@ -171,66 +185,72 @@
             touch-action: manipulation;
         }
 
-        .sound-toggle:active {
-            background: rgba(0,0,0,0.8);
+        .sound-btn:active {
+            background: rgba(0,0,0,0.9);
+            transform: scale(0.95);
         }
 
-        /* Стиль для карточки с эмодзи в 3D */
+        /* Стиль для CSS2D карточки */
         .emoji-card {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 100px;
+            font-size: 110px;
             background: rgba(255, 252, 235, 0.95);
-            border-radius: 50px;
-            width: 160px;
-            height: 160px;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.25), 0 0 0 5px #ffd966, 0 0 0 10px #ffb347;
-            transition: transform 0.3s cubic-bezier(0.34, 1.2, 0.64, 1);
+            border-radius: 60px;
+            width: 180px;
+            height: 180px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 0 6px #ffd966, 0 0 0 12px #ffb347;
             font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
-            font-weight: normal;
         }
 
+        /* Адаптация под маленькие экраны */
         @media (max-width: 700px) {
             .nav-btn {
-                padding: 12px 24px;
-                font-size: 1.5rem;
-                min-width: 90px;
+                padding: 14px 24px;
+                font-size: 1.6rem;
+                min-width: 110px;
             }
-            .letter-card h1 { font-size: 2.8rem; }
-            .letter-card p { font-size: 1rem; }
-            .letter-card { padding: 8px 20px; }
-            .emoji-card { width: 120px; height: 120px; font-size: 75px; }
-            .controls-info { font-size: 0.65rem; padding: 5px 12px; }
-            .hint { font-size: 0.6rem; padding: 5px 12px; }
-            .progress-bar { bottom: 100px; }
-            .sound-toggle { bottom: 15px; padding: 6px 16px; font-size: 0.9rem; }
+            .letter-card h1 { font-size: 3.5rem; letter-spacing: 4px; }
+            .letter-card p { font-size: 1.2rem; }
+            .letter-card { padding: 12px 24px; }
+            .emoji-card { width: 140px; height: 140px; font-size: 85px; border-radius: 45px; }
+            .controls-info { font-size: 0.7rem; padding: 7px 14px; }
+            .hint { font-size: 0.7rem; padding: 7px 14px; }
+            .progress-container { bottom: 130px; }
+            .sound-btn { padding: 7px 15px; font-size: 0.9rem; top: 12px; right: 12px; }
         }
 
         @media (max-width: 480px) {
-            .nav-btn { padding: 10px 18px; font-size: 1.2rem; min-width: 70px; }
-            .letter-card h1 { font-size: 2.2rem; }
-            .emoji-card { width: 95px; height: 95px; font-size: 60px; }
+            .nav-btn { padding: 12px 18px; font-size: 1.3rem; min-width: 85px; bottom: 20px; }
+            .letter-card h1 { font-size: 2.5rem; }
+            .letter-card p { font-size: 1rem; }
+            .letter-card { padding: 10px 18px; }
+            .emoji-card { width: 110px; height: 110px; font-size: 65px; border-radius: 35px; }
+            .controls-info, .hint { font-size: 0.6rem; padding: 5px 10px; }
+            .progress-container { bottom: 110px; height: 6px; }
+            .sound-btn { padding: 5px 12px; font-size: 0.8rem; }
         }
 
-        @keyframes gentlePulse {
-            0% { transform: scale(1); text-shadow: 0 0 0 rgba(255,215,0,0); }
-            100% { transform: scale(1.05); text-shadow: 0 0 12px rgba(255,215,0,0.9); }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); text-shadow: 0 0 15px rgba(255,215,0,0.8); }
         }
-        
         .speaking {
-            animation: gentlePulse 0.3s ease-in-out;
+            animation: pulse 0.25s ease-in-out;
         }
     </style>
 </head>
 <body>
+    <div id="game-container"></div>
+
     <div class="top-bar">
         <div class="controls-info">
-            🖱️👆 Вращай сцену пальцем!
+            🖐️ Вращай сцену пальцем
         </div>
         <div class="hint">
-            🎵 Нажми на букву — услышишь звук
+            🎵 Нажми на букву
         </div>
     </div>
 
@@ -241,14 +261,13 @@
         </div>
     </div>
 
-    <div class="progress-bar">
+    <div class="progress-container">
         <div class="progress-fill" id="progressFill"></div>
     </div>
 
     <button class="nav-btn prev-btn" id="prevBtn">◀ Назад</button>
     <button class="nav-btn next-btn" id="nextBtn">Вперёд ▶</button>
-    
-    <button class="sound-toggle" id="soundToggleBtn">🔊 Звук вкл</button>
+    <button class="sound-btn" id="soundBtn">🔊 Звук вкл</button>
 
     <script type="importmap">
         {
@@ -304,34 +323,26 @@
         let currentIndex = 0;
         const totalLetters = alphabet.length;
 
-        // UI элементы
+        // DOM элементы
         const letterHeader = document.getElementById('currentLetter');
         const wordParagraph = document.getElementById('letterWord');
         const nextBtn = document.getElementById('nextBtn');
         const prevBtn = document.getElementById('prevBtn');
         const letterCard = document.getElementById('letterCard');
         const progressFill = document.getElementById('progressFill');
+        const soundBtn = document.getElementById('soundBtn');
 
-        // === ЗВУКОВАЯ СИСТЕМА ===
-        let audioCtx = null;
+        // === ЗВУК И ОЗВУЧКА (работает на телефонах) ===
         let soundEnabled = true;
-        let soundInitialized = false;
-        const soundToggleBtn = document.getElementById('soundToggleBtn');
-
-        function initAudio() {
-            if (audioCtx) return;
+        let audioCtx = null;
+        
+        // Функция для воспроизведения короткого "щелчка"
+        function playClick() {
+            if (!soundEnabled) return;
             try {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            } catch(e) {
-                console.log("Web Audio API не поддерживается");
-                soundEnabled = false;
-                soundToggleBtn.textContent = "🔇 Звук недоступен";
-            }
-        }
-
-        function playPopSound() {
-            if (!soundEnabled || !audioCtx) return;
-            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
                 if (audioCtx.state === 'suspended') {
                     audioCtx.resume();
                 }
@@ -339,84 +350,76 @@
                 const gain = audioCtx.createGain();
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
-                osc.frequency.value = 880;
-                gain.gain.value = 0.08;
+                osc.frequency.value = 800;
+                gain.gain.value = 0.1;
                 osc.type = 'sine';
                 osc.start();
-                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.25);
-                osc.stop(audioCtx.currentTime + 0.25);
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.2);
+                osc.stop(audioCtx.currentTime + 0.2);
             } catch(e) { console.log("Звук не воспроизведён"); }
         }
 
-        function playClickSound() {
-            if (!soundEnabled || !audioCtx) return;
-            try {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.frequency.value = 660;
-                gain.gain.value = 0.06;
-                osc.type = 'sine';
-                osc.start();
-                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.15);
-                osc.stop(audioCtx.currentTime + 0.15);
-            } catch(e) {}
-        }
-
-        function playLetterSound(letter) {
+        // Озвучивание буквы через SpeechSynthesis (работает на телефонах)
+        let currentSpeech = null;
+        function speakLetter(letter) {
             if (!soundEnabled) return;
-            playPopSound();
+            playClick();
             try {
                 if (window.speechSynthesis) {
-                    window.speechSynthesis.cancel();
+                    if (currentSpeech) {
+                        window.speechSynthesis.cancel();
+                    }
                     const utterance = new SpeechSynthesisUtterance(letter);
                     utterance.lang = 'ru-RU';
-                    utterance.rate = 0.7;
-                    utterance.pitch = 1.45;
-                    utterance.volume = 0.95;
-                    setTimeout(() => window.speechSynthesis.speak(utterance), 30);
+                    utterance.rate = 0.75;
+                    utterance.pitch = 1.4;
+                    utterance.volume = 1;
+                    utterance.onend = () => { currentSpeech = null; };
+                    currentSpeech = utterance;
+                    window.speechSynthesis.speak(utterance);
                 }
-            } catch(e) { console.log("Озвучка не поддерживается"); }
+            } catch(e) {
+                console.log("SpeechSynthesis ошибка", e);
+            }
         }
 
-        soundToggleBtn.addEventListener('click', () => {
-            if (!audioCtx && !soundInitialized) {
-                initAudio();
-                soundInitialized = true;
-            }
+        // Переключение звука
+        soundBtn.addEventListener('click', () => {
             soundEnabled = !soundEnabled;
             if (soundEnabled) {
-                soundToggleBtn.textContent = "🔊 Звук вкл";
-                playClickSound();
+                soundBtn.textContent = '🔊 Звук вкл';
+                playClick();
                 if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
             } else {
-                soundToggleBtn.textContent = "🔇 Звук выкл";
+                soundBtn.textContent = '🔇 Звук выкл';
                 if (audioCtx) audioCtx.suspend();
+                if (window.speechSynthesis) window.speechSynthesis.cancel();
             }
         });
 
-        // Инициализация звука при первом касании
-        function initAudioOnFirstTouch() {
-            if (!soundInitialized) {
-                initAudio();
-                soundInitialized = true;
-                if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        // Активация звука при первом касании
+        function initAudioOnTouch() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             }
-            document.removeEventListener('touchstart', initAudioOnFirstTouch);
-            document.removeEventListener('click', initAudioOnFirstTouch);
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            document.removeEventListener('touchstart', initAudioOnTouch);
+            document.removeEventListener('click', initAudioOnTouch);
         }
-        document.addEventListener('touchstart', initAudioOnFirstTouch);
-        document.addEventListener('click', initAudioOnFirstTouch);
+        document.addEventListener('touchstart', initAudioOnTouch);
+        document.addEventListener('click', initAudioOnTouch);
 
-        // === 3D СЦЕНА ===
+        // === 3D ИНИЦИАЛИЗАЦИЯ ===
+        const container = document.getElementById('game-container');
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x9ad0f5);
-        scene.fog = new THREE.FogExp2(0x9ad0f5, 0.007);
+        scene.fog = new THREE.FogExp2(0x9ad0f5, 0.008);
 
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(4.8, 4.0, 7.0);
+        // Камера с учётом мобильных экранов
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(4.5, 3.8, 6.8);
         camera.lookAt(0, 1.2, 0);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -424,31 +427,30 @@
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        document.body.appendChild(renderer.domElement);
+        container.appendChild(renderer.domElement);
 
+        // CSS2 рендерер для карточек
         const labelRenderer = new CSS2DRenderer();
         labelRenderer.setSize(window.innerWidth, window.innerHeight);
         labelRenderer.domElement.style.position = 'absolute';
         labelRenderer.domElement.style.top = '0px';
         labelRenderer.domElement.style.left = '0px';
         labelRenderer.domElement.style.pointerEvents = 'none';
-        document.body.appendChild(labelRenderer.domElement);
+        container.appendChild(labelRenderer.domElement);
 
-        // Орбит контрол с оптимизацией для тач
+        // Управление камерой (адаптировано для тач)
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.07;
         controls.autoRotate = false;
         controls.enableZoom = true;
-        controls.zoomSpeed = 0.8;
+        controls.zoomSpeed = 0.7;
         controls.rotateSpeed = 1.0;
         controls.target.set(0, 1.2, 0);
-        controls.touchRotate = true;
-        controls.touchZoom = true;
 
-        // === ОСВЕЩЕНИЕ ===
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-        scene.add(ambientLight);
+        // Освещение
+        const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambient);
         
         const mainLight = new THREE.DirectionalLight(0xfff5d1, 1.3);
         mainLight.position.set(5, 8, 4);
@@ -465,7 +467,7 @@
         backLight.position.set(0, 2, -5);
         scene.add(backLight);
         
-        // === ПЛАТФОРМА ===
+        // Платформа
         const platformMat = new THREE.MeshStandardMaterial({ color: 0xffdd99, roughness: 0.35, metalness: 0.05, emissive: 0x442200, emissiveIntensity: 0.08 });
         const platform = new THREE.Mesh(new THREE.CylinderGeometry(3.5, 3.5, 0.18, 32), platformMat);
         platform.position.set(0, -0.68, 0);
@@ -473,18 +475,19 @@
         platform.castShadow = true;
         scene.add(platform);
         
+        // Кольцо
         const ringMat = new THREE.MeshStandardMaterial({ color: 0xffaa66, emissive: 0xff6633, emissiveIntensity: 0.2 });
         const ring = new THREE.Mesh(new THREE.TorusGeometry(3.6, 0.1, 64, 200), ringMat);
         ring.rotation.x = Math.PI / 2;
         ring.position.y = -0.62;
         scene.add(ring);
         
-        // Парящие шарики (уменьшено для мобильных)
+        // Парящие шарики (немного для мобильных)
         const floatingSpheres = [];
-        const sphereColors = [0xffaa88, 0xaaffcc, 0xffccaa, 0xffaacc, 0x88ddff];
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 18; i++) {
             const size = 0.1 + Math.random() * 0.12;
-            const sphereMat = new THREE.MeshStandardMaterial({ color: sphereColors[Math.floor(Math.random() * sphereColors.length)], emissive: 0x442200, emissiveIntensity: 0.08 });
+            const colors = [0xffaa88, 0xaaffcc, 0xffccaa, 0xffaacc, 0x88ddff];
+            const sphereMat = new THREE.MeshStandardMaterial({ color: colors[Math.floor(Math.random() * colors.length)], emissive: 0x442200, emissiveIntensity: 0.08 });
             const sphere = new THREE.Mesh(new THREE.SphereGeometry(size, 12, 12), sphereMat);
             sphere.position.set((Math.random() - 0.5) * 8, Math.random() * 3 - 0.5, (Math.random() - 0.5) * 7);
             sphere.castShadow = false;
@@ -493,7 +496,7 @@
             floatingSpheres.push({ mesh: sphere, speed: 0.005 + Math.random() * 0.012, offsetY: sphere.position.y, range: 0.22, phase: Math.random() * Math.PI * 2 });
         }
 
-        // === КУБИК ===
+        // === КУБИК С БУКВОЙ ===
         let currentCubeGroup = null;
         let currentEmojiObject = null;
 
@@ -513,7 +516,7 @@
             ctx.fillStyle = '#FFFEF8';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.strokeStyle = `#${colorHex.toString(16).padStart(6, '0')}`;
-            ctx.lineWidth = 20;
+            ctx.lineWidth = 22;
             ctx.strokeRect(28, 28, canvas.width - 56, canvas.height - 56);
             ctx.fillStyle = `#${colorHex.toString(16).padStart(6, '0')}`;
             ctx.font = `Bold ${canvas.width * 0.56}px "Comic Neue", "Comic Sans MS"`;
@@ -548,7 +551,7 @@
             const div = document.createElement('div');
             div.className = 'emoji-card';
             div.textContent = emoji;
-            div.style.background = `rgba(${(colorHex >> 16 & 255)}, ${(colorHex >> 8 & 255)}, ${colorHex & 255}, 0.12)`;
+            div.style.background = `rgba(${(colorHex >> 16 & 255)}, ${(colorHex >> 8 & 255)}, ${colorHex & 255}, 0.15)`;
             const css2d = new CSS2DObject(div);
             css2d.position.set(1.7, 0.0, 0.9);
             return css2d;
@@ -575,7 +578,7 @@
             currentEmojiObject = createEmojiCard(data.emoji, data.color);
             scene.add(currentEmojiObject);
             
-            // Анимация появления
+            // Анимация появления кубика
             currentCubeGroup.scale.set(0.1, 0.1, 0.1);
             let startAnim = performance.now();
             function popAnim() {
@@ -587,6 +590,7 @@
             }
             requestAnimationFrame(popAnim);
             
+            // Анимация карточки
             if (currentEmojiObject && currentEmojiObject.element) {
                 currentEmojiObject.element.style.transform = 'scale(0)';
                 setTimeout(() => {
@@ -597,9 +601,8 @@
                 }, 50);
             }
             
-            // Звук при смене буквы
-            playClickSound();
-            setTimeout(() => playLetterSound(data.letter), 120);
+            // Озвучивание новой буквы
+            setTimeout(() => speakLetter(data.letter), 100);
         }
 
         function nextLetter() { 
@@ -612,41 +615,49 @@
             switchToLetter(currentIndex); 
         }
         
-        nextBtn.addEventListener('click', nextLetter);
-        prevBtn.addEventListener('click', prevLetter);
-        letterCard.addEventListener('click', () => {
-            playLetterSound(alphabet[currentIndex].letter);
-            letterCard.classList.add('speaking');
-            setTimeout(() => letterCard.classList.remove('speaking'), 300);
-        });
-        
-        // Адаптация под мобильные: убираем задержку при касании
+        // Обработчики с поддержкой touch
+        nextBtn.addEventListener('click', () => nextLetter());
         nextBtn.addEventListener('touchstart', (e) => { e.preventDefault(); nextLetter(); }, { passive: false });
-        prevBtn.addEventListener('touchstart', (e) => { e.preventDefault(); prevLetter(); }, { passive: false });
-        letterCard.addEventListener('touchstart', (e) => { e.preventDefault(); playLetterSound(alphabet[currentIndex].letter); letterCard.classList.add('speaking'); setTimeout(() => letterCard.classList.remove('speaking'), 300); }, { passive: false });
         
+        prevBtn.addEventListener('click', () => prevLetter());
+        prevBtn.addEventListener('touchstart', (e) => { e.preventDefault(); prevLetter(); }, { passive: false });
+        
+        letterCard.addEventListener('click', () => speakLetter(alphabet[currentIndex].letter));
+        letterCard.addEventListener('touchstart', (e) => { 
+            e.preventDefault(); 
+            speakLetter(alphabet[currentIndex].letter);
+            letterCard.classList.add('speaking');
+            setTimeout(() => letterCard.classList.remove('speaking'), 250);
+        }, { passive: false });
+        
+        // Старт
         switchToLetter(0);
         
-        // === АНИМАЦИЯ ===
-        let timeAnim = 0;
+        // Предзагрузка голосов
+        if (window.speechSynthesis) {
+            window.speechSynthesis.getVoices();
+        }
+        
+        // === АНИМАЦИОННЫЙ ЦИКЛ ===
+        let time = 0;
         
         function animate() {
-            timeAnim = performance.now() / 1000;
+            time = performance.now() / 1000;
             ring.rotation.z += 0.008;
             
             floatingSpheres.forEach(ball => {
-                ball.mesh.position.y = ball.offsetY + Math.sin(timeAnim * ball.speed * 2 + ball.phase) * ball.range;
+                ball.mesh.position.y = ball.offsetY + Math.sin(time * ball.speed * 2 + ball.phase) * ball.range;
                 ball.mesh.rotation.x += 0.005;
                 ball.mesh.rotation.y += 0.008;
             });
             
             if (currentCubeGroup) {
-                currentCubeGroup.rotation.y = Math.sin(timeAnim * 1.2) * 0.08;
-                currentCubeGroup.position.y = 0.2 + Math.sin(timeAnim * 2.2) * 0.015;
+                currentCubeGroup.rotation.y = Math.sin(time * 1.2) * 0.08;
+                currentCubeGroup.position.y = 0.2 + Math.sin(time * 2.2) * 0.015;
             }
             
             if (currentEmojiObject) {
-                currentEmojiObject.position.y = 0.0 + Math.sin(timeAnim * 2.0) * 0.035;
+                currentEmojiObject.position.y = 0.0 + Math.sin(time * 2.0) * 0.035;
             }
             
             controls.update();
@@ -657,6 +668,7 @@
         
         animate();
         
+        // Адаптация под изменение размера окна
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
@@ -664,12 +676,7 @@
             labelRenderer.setSize(window.innerWidth, window.innerHeight);
         });
         
-        // Предзагрузка голосов
-        if (window.speechSynthesis) {
-            window.speechSynthesis.getVoices();
-        }
-        
-        console.log("Весёлая Азбука 3D запущена! Мобильная версия оптимизирована, звуки работают!");
+        console.log("Весёлая Азбука 3D запущена! Мобильная версия оптимизирована, озвучка работает!");
     </script>
 </body>
 </html>
