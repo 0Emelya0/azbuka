@@ -22,7 +22,6 @@
             height: 100%;
         }
 
-        /* Контейнер для canvas - полный экран */
         #canvas-container {
             position: fixed;
             top: 0;
@@ -32,7 +31,6 @@
             z-index: 1;
         }
 
-        /* Все UI элементы поверх canvas, с фиксированным позиционированием */
         .ui-overlay {
             position: fixed;
             top: 0;
@@ -43,7 +41,6 @@
             z-index: 20;
         }
 
-        /* Верхняя панель */
         .top-bar {
             position: absolute;
             top: 15px;
@@ -67,7 +64,6 @@
             font-family: monospace;
         }
 
-        /* Карточка с буквой - по центру, чуть ниже середины */
         .letter-panel {
             position: absolute;
             bottom: 25%;
@@ -108,7 +104,6 @@
             font-weight: bold;
         }
 
-        /* Кнопки навигации */
         .nav-btn {
             position: absolute;
             bottom: 30px;
@@ -137,7 +132,6 @@
         .next-btn { right: 20px; }
         .prev-btn { left: 20px; background: #66bb6a; text-shadow: 2px 2px 0 #2e7d32; box-shadow: 0 8px 0 #2e7d32; }
 
-        /* Прогресс-бар */
         .progress-container {
             position: absolute;
             bottom: 120px;
@@ -159,7 +153,6 @@
             transition: width 0.3s ease;
         }
 
-        /* Кнопка звука */
         .sound-btn {
             position: absolute;
             top: 15px;
@@ -183,7 +176,7 @@
             transform: scale(0.95);
         }
 
-        /* CSS2D карточка эмодзи */
+        /* Стиль карточки эмодзи - теперь она не перекрывает кубик */
         .emoji-card {
             display: flex;
             align-items: center;
@@ -198,7 +191,6 @@
             font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
         }
 
-        /* Мобильная адаптация */
         @media (max-width: 700px) {
             .nav-btn { padding: 12px 24px; font-size: 1.4rem; min-width: 100px; bottom: 20px; }
             .letter-card h1 { font-size: 3rem; letter-spacing: 3px; }
@@ -233,12 +225,8 @@
     
     <div class="ui-overlay">
         <div class="top-bar">
-            <div class="controls-info">
-                🖱️👆 Вращай сцену
-            </div>
-            <div class="hint">
-                🎵 Нажми на букву
-            </div>
+            <div class="controls-info">🖱️👆 Вращай сцену</div>
+            <div class="hint">🎵 Нажми на букву</div>
         </div>
 
         <div class="letter-panel">
@@ -271,7 +259,7 @@
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 
-        // ========== АЛФАВИТ ==========
+        // ------------------- АЛФАВИТ -------------------
         const alphabet = [
             { letter: "А", word: "Арбуз", color: 0xe34234, emoji: "🍉" },
             { letter: "Б", word: "Барабан", color: 0x3a9b5e, emoji: "🥁" },
@@ -320,13 +308,12 @@
         const progressFill = document.getElementById('progressFill');
         const soundBtn = document.getElementById('soundBtn');
 
-        // === ЗВУК И ОЗВУЧКА (гарантированно работает на телефонах) ===
+        // ------------------- ЗВУК И ОЗВУЧКА -------------------
         let soundEnabled = true;
         let audioCtx = null;
         let currentSpeech = null;
         let audioInitialized = false;
 
-        // Инициализация аудиоконтекста по первому касанию/клику
         function initAudio() {
             if (audioInitialized) return;
             try {
@@ -336,12 +323,9 @@
         }
 
         function resumeAudio() {
-            if (audioCtx && audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
         }
 
-        // Короткий звук "пик"
         function playBeep() {
             if (!soundEnabled) return;
             if (!audioCtx) initAudio();
@@ -361,7 +345,6 @@
             } catch(e) {}
         }
 
-        // Озвучивание буквы через SpeechSynthesis
         function speakLetter(letter) {
             if (!soundEnabled) return;
             playBeep();
@@ -380,7 +363,6 @@
             } catch(e) { console.log("SpeechSynthesis ошибка", e); }
         }
 
-        // Переключение звука
         function toggleSound() {
             soundEnabled = !soundEnabled;
             if (soundEnabled) {
@@ -397,11 +379,9 @@
         soundBtn.addEventListener('click', toggleSound);
         soundBtn.addEventListener('touchstart', (e) => { e.preventDefault(); toggleSound(); }, { passive: false });
 
-        // Глобальная инициализация звука при первом взаимодействии с игрой
         function onFirstInteraction() {
             initAudio();
             resumeAudio();
-            // Также предзагружаем голоса
             if (window.speechSynthesis) window.speechSynthesis.getVoices();
             document.removeEventListener('click', onFirstInteraction);
             document.removeEventListener('touchstart', onFirstInteraction);
@@ -409,14 +389,14 @@
         document.addEventListener('click', onFirstInteraction);
         document.addEventListener('touchstart', onFirstInteraction);
 
-        // === 3D СЦЕНА ===
+        // ------------------- 3D СЦЕНА -------------------
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x8ecae6);
         scene.fog = new THREE.FogExp2(0x8ecae6, 0.007);
 
         const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(4.5, 3.8, 6.5);
+        camera.position.set(4.8, 4.0, 7.0);
         camera.lookAt(0, 1.2, 0);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -488,7 +468,7 @@
             floatingSpheres.push({ mesh: sphere, speed: 0.004 + Math.random() * 0.012, offsetY: sphere.position.y, range: 0.22, phase: Math.random() * Math.PI * 2 });
         }
 
-        // === ДИНАМИЧЕСКИЕ ОБЪЕКТЫ ===
+        // ------------------- ДИНАМИЧЕСКИЕ ОБЪЕКТЫ -------------------
         let currentCubeGroup = null;
         let currentEmojiObject = null;
 
@@ -537,13 +517,15 @@
             return group;
         }
 
+        // КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: карточка теперь справа, далеко от кубика, чтобы не перекрывать
         function createEmojiCard(emoji, colorHex) {
             const div = document.createElement('div');
             div.className = 'emoji-card';
             div.textContent = emoji;
             div.style.background = `rgba(${(colorHex >> 16 & 255)}, ${(colorHex >> 8 & 255)}, ${colorHex & 255}, 0.15)`;
             const css2d = new CSS2DObject(div);
-            css2d.position.set(1.7, 0.0, 0.95);
+            // Позиция: X=2.3 (правее), Y=0.0, Z=0.95 (чуть вперёд) — кубик в (0,0.2,0), не пересекаются
+            css2d.position.set(2.3, 0.0, 0.95);
             return css2d;
         }
 
@@ -568,7 +550,7 @@
             currentEmojiObject = createEmojiCard(data.emoji, data.color);
             scene.add(currentEmojiObject);
             
-            // Анимация появления
+            // Анимация появления кубика
             currentCubeGroup.scale.set(0.1, 0.1, 0.1);
             let startAnim = performance.now();
             function popAnim() {
@@ -580,6 +562,7 @@
             }
             requestAnimationFrame(popAnim);
             
+            // Анимация появления карточки
             if (currentEmojiObject && currentEmojiObject.element) {
                 currentEmojiObject.element.style.transform = 'scale(0)';
                 setTimeout(() => {
@@ -619,12 +602,11 @@
         
         switchToLetter(0);
         
-        // Предзагрузка голосов
         if (window.speechSynthesis) {
             window.speechSynthesis.getVoices();
         }
         
-        // АНИМАЦИЯ
+        // ------------------- АНИМАЦИЯ -------------------
         let time = 0;
         function animate() {
             time = performance.now() / 1000;
@@ -659,7 +641,7 @@
             labelRenderer.setSize(window.innerWidth, window.innerHeight);
         });
         
-        console.log("Весёлая Азбука 3D успешно запущена!");
+        console.log("Весёлая Азбука 3D — карточка справа, озвучка работает");
     </script>
 </body>
 </html>
