@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Весёлая Азбука 3D - Яркие эмоции для малышей</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', 'Segoe UI Emoji', cursive, sans-serif;
+            background-color: #1a2a32;
+        }
+
+        .ui-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .letter-card {
+            background: rgba(255, 248, 225, 0.94);
+            backdrop-filter: blur(10px);
+            border-radius: 60px;
+            display: inline-block;
+            padding: 8px 28px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2), 0 0 0 4px #ffd966, 0 0 0 8px #f9b83a;
+            pointer-events: auto;
+            transition: transform 0.2s ease, background 0.2s;
+            cursor: pointer;
+        }
+        .letter-card:hover { transform: scale(1.02); background: rgba(255, 252, 235, 0.98); }
+
+        .letter-card h1 {
+            font-size: 4.2rem;
+            margin: 0;
+            color: #2e5c3e;
+            text-shadow: 3px 3px 0 #ffd966;
+            letter-spacing: 4px;
+        }
+
+        .letter-card p {
+            font-size: 1.3rem;
+            margin: 5px 0 0;
+            color: #4a2e1e;
+            font-weight: bold;
+        }
+
+        .controls-info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            padding: 8px 18px;
+            border-radius: 40px;
+            color: #f9f3d9;
+            font-size: 0.9rem;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 10;
+            font-family: monospace;
+        }
+
+        .nav-btn {
+            position: absolute;
+            bottom: 30px;
+            background: #ffb347;
+            border: none;
+            border-radius: 60px;
+            padding: 14px 28px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 0 #c45100;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #c45100;
+            transition: 0.07s linear;
+            z-index: 20;
+            font-family: inherit;
+            pointer-events: auto;
+        }
+
+        .nav-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #c45100;
+        }
+
+        .next-btn { right: 30px; }
+        .prev-btn { left: 30px; background: #66bb6a; text-shadow: 2px 2px 0 #2e7d32; box-shadow: 0 8px 0 #2e7d32; }
+
+        @media (max-width: 600px) {
+            .letter-card h1 { font-size: 2.5rem; }
+            .letter-card p { font-size: 1rem; }
+            .nav-btn { padding: 10px 18px; font-size: 1.2rem; bottom: 20px; }
+            .prev-btn { left: 20px; }
+            .next-btn { right: 20px; }
+            .controls-info { font-size: 0.7rem; top: 10px; left: 10px; }
+        }
+
+        /* Подсказка перенесена наверх */
+        .hint {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.55);
+            color: #eedd99;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            pointer-events: none;
+            font-family: monospace;
+            backdrop-filter: blur(4px);
+            z-index: 10;
+            white-space: nowrap;
+        }
+        
+        @media (max-width: 600px) {
+            .hint {
+                top: 10px;
+                right: 10px;
+                font-size: 0.65rem;
+                padding: 5px 12px;
+                white-space: normal;
+                max-width: 180px;
+                text-align: right;
+            }
+        }
+        
+        @keyframes gentlePulse {
+            0% { transform: scale(1); text-shadow: 0 0 0 rgba(255,215,0,0); }
+            100% { transform: scale(1.05); text-shadow: 0 0 8px rgba(255,215,0,0.8); }
+        }
+        .speaking {
+            animation: gentlePulse 0.3s ease-in-out;
+        }
+        
+        /* Стиль для карточки с эмодзи */
+        .emoji-card {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 110px;
+            background: rgba(255, 250, 225, 0.95);
+            border-radius: 50px;
+            width: 180px;
+            height: 180px;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.25), 0 0 0 6px #ffd966, 0 0 0 12px #ffb347;
+            transition: transform 0.3s cubic-bezier(0.34, 1.2, 0.64, 1);
+            font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+        }
+        
+        @media (max-width: 600px) {
+            .emoji-card {
+                width: 130px;
+                height: 130px;
+                font-size: 75px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="controls-info">
+        🖱️ Мышь/палец — вращай и приближай! ✨
+    </div>
+    <div class="ui-panel">
+        <div class="letter-card" id="letterCard">
+            <h1 id="currentLetter">А</h1>
+            <p id="letterWord">Арбуз 🍉</p>
+        </div>
+    </div>
+    <button class="nav-btn prev-btn" id="prevBtn">⬅️ Назад</button>
+    <button class="nav-btn next-btn" id="nextBtn">Вперёд ➡️</button>
+    <div class="hint">
+        👆 Нажми на карточку с буквой — услышишь букву!
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+        // ========== АЛФАВИТ С ЭМОДЗИ ==========
+        const alphabet = [
+            { letter: "А", word: "Арбуз", color: 0xe34234, emoji: "🍉" },
+            { letter: "Б", word: "Барабан", color: 0x3a9b5e, emoji: "🥁" },
+            { letter: "В", word: "Волк", color: 0x5d6d7e, emoji: "🐺" },
+            { letter: "Г", word: "Гусь", color: 0xf4d03f, emoji: "🦢" },
+            { letter: "Д", word: "Дом", color: 0xc44536, emoji: "🏠" },
+            { letter: "Е", word: "Енот", color: 0x7f8c8d, emoji: "🦝" },
+            { letter: "Ё", word: "Ёлка", color: 0x2e8b57, emoji: "🎄" },
+            { letter: "Ж", word: "Жук", color: 0xf1c40f, emoji: "🐞" },
+            { letter: "З", word: "Зебра", color: 0x34495e, emoji: "🦓" },
+            { letter: "И", word: "Игрушка", color: 0xe67e22, emoji: "🧸" },
+            { letter: "Й", word: "Йогурт", color: 0xf5b041, emoji: "🥛" },
+            { letter: "К", word: "Кот", color: 0xf39c12, emoji: "🐱" },
+            { letter: "Л", word: "Лиса", color: 0xe59866, emoji: "🦊" },
+            { letter: "М", word: "Медведь", color: 0x8e44ad, emoji: "🐻" },
+            { letter: "Н", word: "Носорог", color: 0x5d6d7e, emoji: "🦏" },
+            { letter: "О", word: "Облако", color: 0xaed6f1, emoji: "☁️" },
+            { letter: "П", word: "Петух", color: 0xe67e22, emoji: "🐓" },
+            { letter: "Р", word: "Ромашка", color: 0xf8c471, emoji: "🌼" },
+            { letter: "С", word: "Слон", color: 0x95a5a6, emoji: "🐘" },
+            { letter: "Т", word: "Трактор", color: 0x27ae60, emoji: "🚜" },
+            { letter: "У", word: "Утка", color: 0xf4d03f, emoji: "🦆" },
+            { letter: "Ф", word: "Флаг", color: 0x3498db, emoji: "🏁" },
+            { letter: "Х", word: "Хомяк", color: 0xe59866, emoji: "🐹" },
+            { letter: "Ц", word: "Цыпленок", color: 0xf7dc6f, emoji: "🐥" },
+            { letter: "Ч", word: "Чайник", color: 0x5dade2, emoji: "🫖" },
+            { letter: "Ш", word: "Шарик", color: 0xb2babb, emoji: "🎈" },
+            { letter: "Щ", word: "Щенок", color: 0xd35400, emoji: "🐕" },
+            { letter: "Ъ", word: "Твёрдый знак", color: 0x7f8c8d, emoji: "🔷" },
+            { letter: "Ы", word: "Буква Ы", color: 0xfad7a1, emoji: "🧀" },
+            { letter: "Ь", word: "Мягкий знак", color: 0xbdc3c7, emoji: "🌸" },
+            { letter: "Э", word: "Эму", color: 0xb9770e, emoji: "🐦" },
+            { letter: "Ю", word: "Юла", color: 0xc0392b, emoji: "🪀" },
+            { letter: "Я", word: "Яблоко", color: 0xe74c3c, emoji: "🍎" }
+        ];
+
+        let currentIndex = 0;
+        const totalLetters = alphabet.length;
+
+        // UI элементы
+        const letterHeader = document.getElementById('currentLetter');
+        const wordParagraph = document.getElementById('letterWord');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const letterCard = document.getElementById('letterCard');
+
+        // === 3D сцена ===
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x9ad0f5);
+        scene.fog = new THREE.FogExp2(0x9ad0f5, 0.006);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(5.2, 4.2, 7.5);
+        camera.lookAt(0, 1.2, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.body.appendChild(renderer.domElement);
+
+        // CSS2 рендерер для эмодзи-карточек
+        const labelRenderer = new CSS2DRenderer();
+        labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        labelRenderer.domElement.style.position = 'absolute';
+        labelRenderer.domElement.style.top = '0px';
+        labelRenderer.domElement.style.left = '0px';
+        labelRenderer.domElement.style.pointerEvents = 'none';
+        document.body.appendChild(labelRenderer.domElement);
+
+        // Орбит контрол
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.06;
+        controls.autoRotate = false;
+        controls.enableZoom = true;
+        controls.zoomSpeed = 0.8;
+        controls.rotateSpeed = 1.2;
+        controls.target.set(0, 1.2, 0);
+
+        // === ОСВЕЩЕНИЕ ===
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
+        
+        const mainLight = new THREE.DirectionalLight(0xfff5d1, 1.4);
+        mainLight.position.set(5, 8, 4);
+        mainLight.castShadow = true;
+        mainLight.shadow.mapSize.width = 1024;
+        mainLight.shadow.mapSize.height = 1024;
+        scene.add(mainLight);
+        
+        const fillLight = new THREE.PointLight(0xffaa88, 0.55);
+        fillLight.position.set(-2, 2.5, 4);
+        scene.add(fillLight);
+        
+        const backLight = new THREE.PointLight(0x88aaff, 0.5);
+        backLight.position.set(0, 2.5, -5);
+        scene.add(backLight);
+        
+        const colorLight = new THREE.PointLight(0xffcc88, 0.45);
+        colorLight.position.set(1.5, 1, 2.5);
+        scene.add(colorLight);
+        
+        // === ИГРОВАЯ ПЛАТФОРМА ===
+        const platformMat = new THREE.MeshStandardMaterial({ color: 0xffdd99, roughness: 0.35, metalness: 0.05, emissive: 0x442200, emissiveIntensity: 0.08 });
+        const platform = new THREE.Mesh(new THREE.CylinderGeometry(3.8, 3.8, 0.18, 32), platformMat);
+        platform.position.set(0, -0.68, 0);
+        platform.receiveShadow = true;
+        platform.castShadow = true;
+        scene.add(platform);
+        
+        const ringMat = new THREE.MeshStandardMaterial({ color: 0xffaa66, emissive: 0xff6633, emissiveIntensity: 0.25 });
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(3.9, 0.12, 64, 200), ringMat);
+        ring.rotation.x = Math.PI / 2;
+        ring.position.y = -0.62;
+        scene.add(ring);
+        
+        // === КОЛИЧЕСТВО ШАРИКОВ ===
+        const floatingSpheres = [];
+        const sphereColors = [0xffaa88, 0xaaffcc, 0xffccaa, 0xffaacc, 0x88ddff, 0xffdd99, 0xffbb77];
+        for (let i = 0; i < 25; i++) {
+            const size = 0.1 + Math.random() * 0.15;
+            const sphereMat = new THREE.MeshStandardMaterial({ color: sphereColors[Math.floor(Math.random() * sphereColors.length)], emissive: 0x442200, emissiveIntensity: 0.1 });
+            const sphere = new THREE.Mesh(new THREE.SphereGeometry(size, 16, 16), sphereMat);
+            sphere.position.set((Math.random() - 0.5) * 9, Math.random() * 3.5 - 0.5, (Math.random() - 0.5) * 8);
+            sphere.castShadow = true;
+            scene.add(sphere);
+            floatingSpheres.push({ mesh: sphere, speed: 0.005 + Math.random() * 0.012, offsetY: sphere.position.y, range: 0.22, phase: Math.random() * Math.PI * 2 });
+        }
+
+        // === КУБИК С БУКВОЙ ===
+        let currentCubeGroup = null;
+        
+        function createLetterCube(letter, colorHex) {
+            const group = new THREE.Group();
+            const boxMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.2, metalness: 0.05, emissive: 0x331100, emissiveIntensity: 0.08 });
+            const cube = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), boxMat);
+            cube.castShadow = true;
+            cube.receiveShadow = true;
+            group.add(cube);
+            
+            // Текстура с буквой 
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = `rgba(255, 252, 235, 0.98)`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = `#${colorHex.toString(16).padStart(6, '0')}`;
+            ctx.lineWidth = 20;
+            ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60);
+            ctx.fillStyle = `#${colorHex.toString(16).padStart(6, '0')}`;
+            ctx.font = `Bold ${canvas.width * 0.56}px "Comic Neue", "Comic Sans MS", "Segoe UI Emoji"`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(letter, canvas.width/2, canvas.height/2);
+            // Весёлые блёстки
+            for(let i=0;i<80;i++) {
+                ctx.fillStyle = `hsl(${Math.random() * 360}, 85%, 70%)`;
+                ctx.beginPath();
+                ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 5 + 2, 0, Math.PI*2);
+                ctx.fill();
+            }
+            const texture = new THREE.CanvasTexture(canvas);
+            const faceMat = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.15, metalness: 0.02 });
+            const sticker = new THREE.Mesh(new THREE.BoxGeometry(1.05, 1.05, 0.08), faceMat);
+            sticker.position.set(0, 0, 0.63);
+            group.add(sticker);
+            
+            // Цветные уголки
+            const edgeMatSmall = new THREE.MeshStandardMaterial({ color: 0xffeebb });
+            for (let ix = -1; ix <= 1; ix+=2) {
+                for (let iz = -1; iz <= 1; iz+=2) {
+                    const corner = new THREE.Mesh(new THREE.SphereGeometry(0.11, 8, 8), edgeMatSmall);
+                    corner.position.set(ix*0.6, iz*0.6, 0.62);
+                    group.add(corner);
+                }
+            }
+            return group;
+        }
+
+        // === СОЗДАНИЕ КАРТОЧКИ С ЭМОДЗИ ===
+        let currentEmojiObject = null;
+        
+        function createEmojiCard(emoji, colorHex) {
+            const div = document.createElement('div');
+            div.className = 'emoji-card';
+            div.textContent = emoji;
+            div.style.background = `rgba(${(colorHex >> 16 & 255)}, ${(colorHex >> 8 & 255)}, ${colorHex & 255}, 0.15)`;
+            div.style.backdropFilter = 'blur(8px)';
+            
+            const css2d = new CSS2DObject(div);
+            css2d.position.set(1.9, 0.05, 1.1);
+            return css2d;
+        }
+        
+        // === ОЗВУЧКА БУКВ ===
+        let currentUtterance = null;
+        
+        function speakLetterBeautifully(letter) {
+            try {
+                if (currentUtterance) {
+                    window.speechSynthesis.cancel();
+                }
+                
+                const utterance = new SpeechSynthesisUtterance(letter);
+                utterance.lang = 'ru-RU';
+                utterance.rate = 0.7;
+                utterance.pitch = 1.45;
+                utterance.volume = 0.95;
+                
+                setTimeout(() => {
+                    window.speechSynthesis.speak(utterance);
+                }, 50);
+                
+                currentUtterance = utterance;
+                letterCard.classList.add('speaking');
+                setTimeout(() => letterCard.classList.remove('speaking'), 300);
+                
+                utterance.onend = () => { currentUtterance = null; };
+            } catch(e) { 
+                console.log("Озвучка временно недоступна"); 
+            }
+        }
+        
+        // === ПЕРЕКЛЮЧЕНИЕ БУКВЫ ===
+        function switchToLetter(index) {
+            const data = alphabet[index];
+            letterHeader.textContent = data.letter;
+            wordParagraph.innerHTML = `${data.word} ${data.emoji}`;
+            
+            // Обновляем кубик
+            if (currentCubeGroup) scene.remove(currentCubeGroup);
+            currentCubeGroup = createLetterCube(data.letter, data.color);
+            currentCubeGroup.position.set(0, 0.2, 0);
+            scene.add(currentCubeGroup);
+            
+            // Обновляем эмодзи-карточку
+            if (currentEmojiObject) scene.remove(currentEmojiObject);
+            currentEmojiObject = createEmojiCard(data.emoji, data.color);
+            scene.add(currentEmojiObject);
+            
+            // Анимация появления кубика
+            currentCubeGroup.scale.set(0.1, 0.1, 0.1);
+            let startAnim = performance.now();
+            function popAnim() {
+                const t = Math.min(1, (performance.now() - startAnim) / 400);
+                const ease = 1 - Math.pow(1-t, 3);
+                if (currentCubeGroup) currentCubeGroup.scale.setScalar(0.1 + ease * 0.9);
+                if (t < 1) requestAnimationFrame(popAnim);
+                else if(currentCubeGroup) currentCubeGroup.scale.set(1,1,1);
+            }
+            requestAnimationFrame(popAnim);
+            
+            // Анимация появления эмодзи-карточки
+            if (currentEmojiObject && currentEmojiObject.element) {
+                currentEmojiObject.element.style.transform = 'scale(0) rotate(-10deg)';
+                setTimeout(() => {
+                    if (currentEmojiObject && currentEmojiObject.element) {
+                        currentEmojiObject.element.style.transition = 'transform 0.35s cubic-bezier(0.34, 1.2, 0.64, 1)';
+                        currentEmojiObject.element.style.transform = 'scale(1) rotate(0deg)';
+                    }
+                }, 50);
+            }
+            
+            setTimeout(() => speakLetterBeautifully(data.letter), 150);
+        }
+        
+        function nextLetter() { 
+            currentIndex = (currentIndex + 1) % totalLetters; 
+            switchToLetter(currentIndex); 
+        }
+        
+        function prevLetter() { 
+            currentIndex = (currentIndex - 1 + totalLetters) % totalLetters; 
+            switchToLetter(currentIndex); 
+        }
+        
+        nextBtn.addEventListener('click', nextLetter);
+        prevBtn.addEventListener('click', prevLetter);
+        letterCard.addEventListener('click', () => speakLetterBeautifully(alphabet[currentIndex].letter));
+        
+        switchToLetter(0);
+        
+        // === АНИМАЦИОННЫЙ ЦИКЛ ===
+        let timeAnim = 0;
+        
+        function animate() {
+            timeAnim = performance.now() / 1000;
+            
+            ring.rotation.z += 0.008;
+            
+            // Анимация шариков
+            floatingSpheres.forEach(ball => {
+                ball.mesh.position.y = ball.offsetY + Math.sin(timeAnim * ball.speed * 2 + ball.phase) * ball.range;
+                ball.mesh.rotation.x += 0.005;
+                ball.mesh.rotation.y += 0.008;
+            });
+            
+            if (currentCubeGroup) {
+                currentCubeGroup.rotation.y = Math.sin(timeAnim * 1.2) * 0.08;
+                currentCubeGroup.position.y = 0.2 + Math.sin(timeAnim * 2.2) * 0.018;
+            }
+            
+            if (currentEmojiObject) {
+                currentEmojiObject.position.y = 0.05 + Math.sin(timeAnim * 2.0) * 0.04;
+            }
+            
+            controls.update();
+            renderer.render(scene, camera);
+            labelRenderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+        
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        if (window.speechSynthesis) {
+            window.speechSynthesis.getVoices();
+        }
+        
+        console.log("Азбука 3D с яркими эмодзи и уменьшенным количеством шариков запущена!");
+    </script>
+</body>
+</html>
