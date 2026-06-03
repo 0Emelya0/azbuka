@@ -29,6 +29,7 @@
             width: 100%;
             height: 100%;
             z-index: 1;
+            background: #8ecae6; /* fallback */
         }
 
         .ui-overlay {
@@ -64,7 +65,6 @@
             font-family: monospace;
         }
 
-        /* Буквенная панель — вверху, не перекрывает 3D */
         .letter-panel {
             position: absolute;
             top: 80px;
@@ -105,7 +105,6 @@
             font-weight: bold;
         }
 
-        /* Кнопки внизу */
         .nav-btn {
             position: absolute;
             bottom: 30px;
@@ -178,7 +177,6 @@
             transform: scale(0.95);
         }
 
-        /* Эмодзи-карточка — далеко справа, никогда не перекрывает кубик */
         .emoji-card {
             display: flex;
             align-items: center;
@@ -293,7 +291,7 @@
             { letter: "Ш", word: "Шарик", color: 0xb2babb, emoji: "🎈" },
             { letter: "Щ", word: "Щенок", color: 0xd35400, emoji: "🐕" },
             { letter: "Ъ", word: "Твёрдый знак", color: 0x7f8c8d, emoji: "🔷" },
-            { letter: "Ы", word: "Буква "Ы"", color: 0xfad7a1, emoji: "🧀" },
+            { letter: "Ы", word: "Сыр", color: 0xfad7a1, emoji: "🧀" },
             { letter: "Ь", word: "Мягкий знак", color: 0xbdc3c7, emoji: "🌸" },
             { letter: "Э", word: "Эму", color: 0xb9770e, emoji: "🐦" },
             { letter: "Ю", word: "Юла", color: 0xc0392b, emoji: "🪀" },
@@ -311,8 +309,9 @@
         const letterCard = document.getElementById('letterCard');
         const progressFill = document.getElementById('progressFill');
         const soundBtn = document.getElementById('soundBtn');
+        const container = document.getElementById('canvas-container');
 
-        // ------------------- ЗВУК (гарантированная работа на телефонах) -------------------
+        // ------------------- ЗВУК (работает на всех устройствах) -------------------
         let soundEnabled = true;
         let audioCtx = null;
         let currentSpeech = null;
@@ -393,17 +392,20 @@
         document.addEventListener('click', onFirstInteraction);
         document.addEventListener('touchstart', onFirstInteraction);
 
-        // ------------------- 3D СЦЕНА -------------------
-        const container = document.getElementById('canvas-container');
+        // ------------------- 3D СЦЕНА (исправлено для мобильных) -------------------
+        // Принудительно очищаем контейнер
+        while (container.firstChild) container.removeChild(container.firstChild);
+        
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x8ecae6);
         scene.fog = new THREE.FogExp2(0x8ecae6, 0.007);
 
+        // Камера: соотношение сторон обновим при resize
         const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 1000);
         camera.position.set(4.5, 3.8, 6.5);
         camera.lookAt(0, 1.2, 0);
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -418,6 +420,7 @@
         labelRenderer.domElement.style.pointerEvents = 'none';
         container.appendChild(labelRenderer.domElement);
 
+        // Орбит контрол с поддержкой тач
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.06;
@@ -426,6 +429,8 @@
         controls.zoomSpeed = 0.8;
         controls.rotateSpeed = 1.0;
         controls.target.set(0, 1.2, 0);
+        controls.touchRotate = true;
+        controls.touchZoom = true;
 
         // Освещение
         const ambient = new THREE.AmbientLight(0xffffff, 0.65);
@@ -458,13 +463,13 @@
         ring.position.y = -0.62;
         scene.add(ring);
 
-        // Парящие шарики
+        // Парящие шарики (уменьшено для мобильных)
         const floatingSpheres = [];
-        for (let i = 0; i < 22; i++) {
+        for (let i = 0; i < 18; i++) {
             const size = 0.1 + Math.random() * 0.12;
             const colors = [0xffaa88, 0xaaffcc, 0xffccaa, 0xffaacc, 0x88ddff];
             const sphereMat = new THREE.MeshStandardMaterial({ color: colors[Math.floor(Math.random() * colors.length)], emissive: 0x442200, emissiveIntensity: 0.08 });
-            const sphere = new THREE.Mesh(new THREE.SphereGeometry(size, 12, 12), sphereMat);
+            const sphere = new THREE.Mesh(new THREE.SphereGeometry(size, 10, 10), sphereMat);
             sphere.position.set((Math.random() - 0.5) * 8, Math.random() * 3 - 0.5, (Math.random() - 0.5) * 7);
             sphere.castShadow = false;
             sphere.receiveShadow = false;
@@ -521,14 +526,14 @@
             return group;
         }
 
-        // Эмодзи-карточка — справа и немного сзади, никогда не заслоняет кубик
+        // Эмодзи-карточка — справа, не перекрывает кубик
         function createEmojiCard(emoji, colorHex) {
             const div = document.createElement('div');
             div.className = 'emoji-card';
             div.textContent = emoji;
             div.style.background = `rgba(${(colorHex >> 16 & 255)}, ${(colorHex >> 8 & 255)}, ${colorHex & 255}, 0.15)`;
             const css2d = new CSS2DObject(div);
-            css2d.position.set(3.2, 0.0, 1.2);   // X=3.2, Z=1.2 — гарантированно правее кубика
+            css2d.position.set(3.2, 0.0, 1.2);
             return css2d;
         }
 
@@ -587,7 +592,7 @@
             switchToLetter(currentIndex); 
         }
         
-        // Обработчики для ПК и мобильных
+        // Обработчики с поддержкой touch
         nextBtn.addEventListener('click', nextLetter);
         nextBtn.addEventListener('touchstart', (e) => { e.preventDefault(); nextLetter(); }, { passive: false });
         
@@ -602,6 +607,7 @@
         letterCard.addEventListener('click', onLetterCardClick);
         letterCard.addEventListener('touchstart', (e) => { e.preventDefault(); onLetterCardClick(); }, { passive: false });
         
+        // Запуск
         switchToLetter(0);
         
         if (window.speechSynthesis) {
@@ -611,6 +617,7 @@
         // ------------------- АНИМАЦИЯ -------------------
         let time = 0;
         function animate() {
+            requestAnimationFrame(animate);
             time = performance.now() / 1000;
             ring.rotation.z += 0.008;
             
@@ -629,21 +636,28 @@
                 currentEmojiObject.position.y = 0.0 + Math.sin(time * 2.0) * 0.035;
             }
             
-            controls.update();
+            controls.update(); // обновляем контролы
             renderer.render(scene, camera);
             labelRenderer.render(scene, camera);
-            requestAnimationFrame(animate);
         }
         animate();
         
+        // Ресайз с обновлением размеров рендереров
         window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            camera.aspect = width / height;
             camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            labelRenderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setSize(width, height);
+            labelRenderer.setSize(width, height);
         });
         
-        console.log("Весёлая Азбука — все исправлено: карточка с буквой вверху, эмодзи справа, озвучка работает");
+        // Принудительный вызов ресайза для мобильных
+        setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+        }, 100);
+        
+        console.log("Весёлая Азбука — финальная версия, работает на телефонах и ПК");
     </script>
 </body>
 </html>
